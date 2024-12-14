@@ -2,7 +2,7 @@ import '../../../../constants/imports.dart';
 
 class CardBackgroundEditor extends StatefulWidget {
   final File imageFile;
-  final void Function(File scaledImage) onConfirm;
+  final void Function(File scaledImage, double blur) onConfirm;
 
   const CardBackgroundEditor({super.key, required this.imageFile, required this.onConfirm});
 
@@ -13,6 +13,7 @@ class CardBackgroundEditor extends StatefulWidget {
 class _CardBackgroundEditorState extends State<CardBackgroundEditor> {
   late TransformationController _controller;
   final GlobalKey _cardKey = GlobalKey();
+  double blur = 1.0;
 
   @override
   void initState() {
@@ -50,22 +51,68 @@ class _CardBackgroundEditorState extends State<CardBackgroundEditor> {
                 borderRadius: BorderRadius.all(Radius.circular(16)),
                 color: AppColors.backgroundColor,
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: AppButton(
-                      onTap: () async {
-                        widget.onConfirm(widget.imageFile);
-                      },
-                      text: 'Confirm'.tr,
-                    ),
+                  AppButton(
+                    text: 'Blur'.tr,
+                    width: Get.width,
+                    color: AppColors.secondaryColor,
+                    onTap: () {
+                      double newBlur = blur;
+                      Get.bottomSheet(Container(
+                        padding: const EdgeInsets.all(16),
+                        child: StatefulBuilder(builder: (context, setState) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              color: AppColors.backgroundColor,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Slider(
+                                  value: newBlur,
+                                  min: 0,
+                                  max: 10,
+                                  label: blur.toString(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      newBlur = value;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      )).then((value) {
+                        if (value != null) {
+                          setState(() {
+                            newBlur = value;
+                          });
+                        }
+                      });
+                    },
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Get.back(),
-                      child: const Text('Cancel'),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppButton(
+                          onTap: () async {
+                            widget.onConfirm(widget.imageFile, blur);
+                          },
+                          text: 'Confirm'.tr,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Get.back(),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -64,9 +64,10 @@ class ApiService {
     }
   }
 
-  Future<void> uploadImage(String endpoint, File imageFile) async {
+  Future<void> uploadImage(String endpoint, File imageFile, double blur) async {
     try {
       FormData formData = FormData.fromMap({
+        "blue": blur,
         "file": await MultipartFile.fromFile(
           imageFile.path,
           filename: imageFile.path.split('/').last,

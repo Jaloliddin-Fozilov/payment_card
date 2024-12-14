@@ -108,7 +108,8 @@ class HomeProvider extends ChangeNotifier {
       showLoadingAlert();
       cardBacgroundStyles.add(cardBackgroundModel);
       await updateCard(cardBackgroundModel.id);
-      await ApiService().uploadImage('/payment_card/add', File(currentCard.cardBackgroundModel.image!));
+      await ApiService()
+          .uploadImage('/payment_card/add', File(currentCard.cardBackgroundModel.image!), cardBackgroundModel.blur);
       dismissLoadingAlert();
       Get.back();
     } catch (e) {

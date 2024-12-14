@@ -21,6 +21,7 @@ class CardBackgroundModel {
   static Future<CardBackgroundModel> fromBackground({
     required int id,
     String? image,
+    double blur = 2,
     List<Color>? colors,
   }) async {
     CardBackgroundModel model = CardBackgroundModel(id: id, image: image, colors: colors);
@@ -109,7 +110,7 @@ class CardBackgroundModel {
     data['id'] = id;
     data['is_background_image'] = isBackgroundImage;
     data['image'] = image;
-    data['color'] = colors?.map((color) => color.value).toList();
+    data['colors'] = colors?.map((color) => color.value).toList();
     return data;
   }
 }

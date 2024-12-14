@@ -34,9 +34,9 @@ class _ChooseImagePageState extends State<ChooseImagePage> {
               Expanded(
                 child: CardBackgroundEditor(
                   imageFile: _selectedImage!,
-                  onConfirm: (scaledImage) async {
+                  onConfirm: (scaledImage, blur) async {
                     await context.read<HomeProvider>().addNewImageStyle(await CardBackgroundModel.fromBackground(
-                        id: 1000 + Random().nextInt(10000), image: scaledImage.path));
+                        id: 1000 + Random().nextInt(10000), image: scaledImage.path, blur: blur));
                     Get.back();
                   },
                 ),
