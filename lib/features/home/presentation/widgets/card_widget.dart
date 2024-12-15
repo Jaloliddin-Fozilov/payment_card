@@ -21,7 +21,7 @@ class CardWidget extends StatelessWidget {
                       : card.cardBackgroundModel.image!.startsWith('http')
                           ? NetworkImage(card.cardBackgroundModel.image!)
                           : FileImage(File(card.cardBackgroundModel.image!)) as ImageProvider,
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                 )
               : null,
           gradient: !card.cardBackgroundModel.isBackgroundImage && card.cardBackgroundModel.colors!.length > 1

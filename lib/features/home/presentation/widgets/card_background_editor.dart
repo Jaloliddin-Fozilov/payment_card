@@ -1,3 +1,7 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
+
 import '../../../../constants/imports.dart';
 
 class CardBackgroundEditor extends StatefulWidget {
@@ -27,19 +31,31 @@ class _CardBackgroundEditorState extends State<CardBackgroundEditor> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: InteractiveViewer(
-              transformationController: _controller,
-              boundaryMargin: const EdgeInsets.all(80),
-              minScale: 0.5,
-              maxScale: 2.0,
-              child: Image.file(widget.imageFile, fit: BoxFit.cover),
+            child: RepaintBoundary(
+              key: _cardKey,
+              child: InteractiveViewer(
+                transformationController: _controller,
+                minScale: 1,
+                maxScale: 5.0,
+                child: Image.file(widget.imageFile, fit: BoxFit.cover),
+              ),
             ),
           ),
           Center(
-            child: SizedBox(
-              key: _cardKey,
-              width: 300,
-              height: 180,
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(
+                sigmaX: blur,
+                sigmaY: blur,
+              ),
+              child: Container(
+                width: 300,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  border: Border.all(color: Colors.red, width: 2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
             ),
           ),
           Positioned(
@@ -53,45 +69,14 @@ class _CardBackgroundEditorState extends State<CardBackgroundEditor> {
               ),
               child: Column(
                 children: [
-                  AppButton(
-                    text: 'Blur'.tr,
-                    width: Get.width,
-                    color: AppColors.secondaryColor,
-                    onTap: () {
-                      double newBlur = blur;
-                      Get.bottomSheet(Container(
-                        padding: const EdgeInsets.all(16),
-                        child: StatefulBuilder(builder: (context, setState) {
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
-                              color: AppColors.backgroundColor,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Slider(
-                                  value: newBlur,
-                                  min: 0,
-                                  max: 10,
-                                  label: blur.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      newBlur = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      )).then((value) {
-                        if (value != null) {
-                          setState(() {
-                            newBlur = value;
-                          });
-                        }
+                  Slider(
+                    value: blur,
+                    min: 0,
+                    max: 10,
+                    label: blur.toString(),
+                    onChanged: (value) {
+                      setState(() {
+                        blur = value;
                       });
                     },
                   ),
@@ -100,7 +85,7 @@ class _CardBackgroundEditorState extends State<CardBackgroundEditor> {
                       Expanded(
                         child: AppButton(
                           onTap: () async {
-                            widget.onConfirm(widget.imageFile, blur);
+                            await _takeScreenshot();
                           },
                           text: 'Confirm'.tr,
                         ),
@@ -121,5 +106,24 @@ class _CardBackgroundEditorState extends State<CardBackgroundEditor> {
         ],
       ),
     );
+  }
+
+  Future<void> _takeScreenshot() async {
+    try {
+      RenderRepaintBoundary boundary = _cardKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+
+      if (byteData != null) {
+        Uint8List pngBytes = byteData.buffer.asUint8List();
+
+        final screenshotFile = File('${widget.imageFile.path}_cropped.png');
+        await screenshotFile.writeAsBytes(pngBytes);
+
+        widget.onConfirm(screenshotFile, blur);
+      }
+    } catch (e) {
+      print("Error capturing screenshot: $e");
+    }
   }
 }
